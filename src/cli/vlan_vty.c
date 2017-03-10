@@ -201,7 +201,7 @@ DEFUN (vtysh_interface_vlan,
 
            VLOG_DBG("%s Created vlan interface = %s\n", __func__, vlan_if);
 
-           vty->index = vlan_if;
+           vty->index = (uintptr_t)vlan_if;
            return CMD_SUCCESS;
        }
    }
@@ -234,7 +234,7 @@ DEFUN (no_vtysh_interface_vlan,
    if (delete_vlan_interface(vlan_if) == CMD_OVSDB_FAILURE) {
        return CMD_OVSDB_FAILURE;
    }
-   vty->index = vlan_if;
+   vty->index = (uintptr_t)vlan_if;
 
    return CMD_SUCCESS;
 }
@@ -278,7 +278,7 @@ DEFUN(vtysh_vlan,
     {
         /* Check for internal VLAN.
          * No configuration is allowed on internal VLANs. */
-        vty_out(vty, "VLAN%ld is used as an internal VLAN. "
+        vty_out(vty, "VLAN%"PRId64" is used as an internal VLAN. "
                 "No further configuration allowed.%s", vlan_row->id, VTY_NEWLINE);
         return CMD_SUCCESS;
     }
@@ -348,7 +348,7 @@ DEFUN(vtysh_vlan,
         if (status == TXN_SUCCESS || status == TXN_UNCHANGED)
         {
             vty->node = VLAN_NODE;
-            vty->index = (char *) vlan;
+            vty->index = (uintptr_t)vlan;
         }
         else
         {
@@ -360,7 +360,7 @@ DEFUN(vtysh_vlan,
     else
     {
         vty->node = VLAN_NODE;
-        vty->index = (char *) vlan;
+        vty->index = (uintptr_t)vlan;
         return CMD_SUCCESS;
     }
     return CMD_SUCCESS;
@@ -405,7 +405,7 @@ DEFUN(vtysh_no_vlan,
         {
             /* Check for internal VLAN.
              * No deletion is allowed on internal VLANs. */
-            vty_out(vty, "VLAN%ld is used as an internal VLAN. "
+            vty_out(vty, "VLAN%"PRId64" is used as an internal VLAN. "
                     "Deletion not allowed.%s", vlan_row->id, VTY_NEWLINE);
             return CMD_SUCCESS;
         }
@@ -416,7 +416,7 @@ DEFUN(vtysh_no_vlan,
         {
             /* Check for inteface VLAN.
              * L2 VLAN deletion is allowed if interface VLAN exists */
-            vty_out(vty, "VLAN%ld is used as an interface VLAN. "
+            vty_out(vty, "VLAN%"PRId64" is used as an interface VLAN. "
                     "Deletion not allowed.%s", vlan_row->id, VTY_NEWLINE);
             vty->node = CONFIG_NODE;
             return CMD_ERR_NOTHING_TODO;
@@ -813,7 +813,7 @@ DEFUN(cli_vlan_admin,
     const struct ovsrec_vlan *vlan_row = NULL;
     struct ovsdb_idl_txn *status_txn = cli_do_config_start();
     enum ovsdb_idl_txn_status status;
-    int vlan_id = atoi((char *) vty->index);
+    int vlan_id = atoi((char*)((uintptr_t)vty->index));
 
     if (NULL == status_txn)
     {
@@ -865,7 +865,7 @@ DEFUN(cli_no_vlan_admin,
     const struct ovsrec_vlan *vlan_row = NULL;
     struct ovsdb_idl_txn *status_txn = cli_do_config_start();
     enum ovsdb_idl_txn_status status;
-    int vlan_id = atoi((char *) vty->index);
+    int vlan_id = atoi((char*)((uintptr_t)vty->index));
 
     if (NULL == status_txn )
     {
@@ -932,7 +932,7 @@ DEFUN(cli_intf_vlan_access,
         }
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -1082,7 +1082,7 @@ DEFUN(cli_intf_no_vlan_access,
         }
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -1243,7 +1243,7 @@ DEFUN(cli_intf_vlan_trunk_allowed,
         }
 
 
-        char *ifname = (char *) vty->index;
+        char *ifname = (char*)((uintptr_t)vty->index);
 
         if ((vlan_id >= min_vlan) && (vlan_id <= max_vlan))
         {
@@ -1417,7 +1417,7 @@ DEFUN(cli_intf_no_vlan_trunk_allowed,
     int vlan_id = atoi((char *) argv[0]);
     int i = 0, n = 0;
     bool is_vlan_found = false;
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
     int64_t* trunks = NULL;
     int trunk_count = 0;
 
@@ -1578,7 +1578,7 @@ DEFUN(cli_intf_vlan_trunk_native,
         }
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -1708,7 +1708,7 @@ DEFUN(cli_intf_no_vlan_trunk_native,
         return CMD_SUCCESS;
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -1826,7 +1826,7 @@ DEFUN(cli_intf_vlan_trunk_native_tag,
         return CMD_SUCCESS;
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -1925,7 +1925,7 @@ DEFUN(cli_intf_no_vlan_trunk_native_tag,
         return CMD_SUCCESS;
     }
 
-    char *ifname = (char *) vty->index;
+    char *ifname = (char*)((uintptr_t)vty->index);
 
     OVSREC_INTERFACE_FOR_EACH(intf_row, idl)
     {
@@ -2022,7 +2022,7 @@ DEFUN(cli_lag_vlan_access,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to set access VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2102,7 +2102,7 @@ DEFUN(cli_lag_no_vlan_access,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to remove access VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2175,7 +2175,7 @@ DEFUN(cli_lag_vlan_trunk_allowed,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to remove access VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2294,7 +2294,7 @@ DEFUN(cli_lag_no_vlan_trunk_allowed,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to remove trunk VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2396,7 +2396,7 @@ DEFUN(cli_lag_vlan_trunk_native,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to add native VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2491,7 +2491,7 @@ DEFUN(cli_lag_no_vlan_trunk_native,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to remove native VLAN. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2563,7 +2563,7 @@ DEFUN(cli_lag_vlan_trunk_native_tag,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to set native VLAN tagging. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2633,7 +2633,7 @@ DEFUN(cli_lag_no_vlan_trunk_native_tag,
         return CMD_SUCCESS;
     }
 
-    char *lagname = (char *) vty->index;
+    char *lagname = (char*)((uintptr_t)vty->index);
     if (!check_port_in_bridge(lagname))
     {
         vty_out(vty, "Failed to remove native VLAN tagging. Disable routing on the LAG.%s", VTY_NEWLINE);
@@ -2741,7 +2741,7 @@ DEFUN(cli_show_vlan,
 
     OVSREC_VLAN_FOR_EACH(vlan_row, idl)
     {
-        sprintf(str, "%ld", vlan_row->id);
+        sprintf(str, "%"PRId64, vlan_row->id);
         shash_add(&sorted_vlan_id, str, (void *)vlan_row);
     }
 
@@ -2760,7 +2760,7 @@ DEFUN(cli_show_vlan,
         struct ovsrec_port **port_nodes = NULL;
         int n = 0;
         char vlan_id[5] = { 0 };
-        snprintf(vlan_id, 5, "%ld", vlan_row->id);
+        snprintf(vlan_id, 5, "%"PRId64, vlan_row->id);
         vty_out(vty, "%-8s", vlan_id);
         vty_out(vty, "%-16s", vlan_row->name);
         vty_out(vty, "%-9s", vlan_row->oper_state);
